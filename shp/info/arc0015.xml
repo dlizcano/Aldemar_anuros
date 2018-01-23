@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><MetaID>{FD457B3D-57E6-4425-BFEE-5DC8D7FAF45B}</MetaID><CreaDate>20160430</CreaDate><CreaTime>11455900</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files (x86)\ArcGIS\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ZonalStatisticsAsTable" Date="20160430" Time="114559">ZonalStatisticsAsTable hexagons_dia01_clip id hexarasterpop_geo.img C:\Users\Diego\Documents\CodigoR\Aldemar_anuros\shp\tablepop6 NODATA</Process></lineage></DataProperties></Esri></metadata>

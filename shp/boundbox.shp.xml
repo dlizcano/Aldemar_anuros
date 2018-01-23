@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><MetaID>{2DD0529B-19A8-42E4-85E9-A19BA76002E2}</MetaID><CreaDate>20160429</CreaDate><CreaTime>14040300</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files (x86)\ArcGIS\ArcToolbox\Toolboxes\Data Management Tools.tbx\AddField" Date="20160429" Time="140403">AddField boundbox value LONG # # # # NON_NULLABLE NON_REQUIRED # boundbox</Process></lineage></DataProperties></Esri></metadata>

@@ -1,0 +1,43 @@
+ESPECIES,target_sp,ESTATUS,CRITERIO,area,coment
+Allobates juanii,75,CR,"B2ab(i,iii)",< 10 km2 ,
+Allobates ranoides,50,EN,"B1ab(i,ii,iii,iv,v)+2ab(i,ii,iii,iv,v)",< 5.000 km2 ,
+Andinobates virolinensis,50,EN,B1ab(iii),< 5.000 km2 ,
+Atelopus lozanoi,75,CR,A2ace; B2ab(v),< 10 km2 ,
+Atelopus mandingues,75,CR,A3ce,,"Reduccio?n del taman?o de la poblacio?n, una reduccio?n del a?rea de ocupacio?n (AOO), ? 80%"
+Atelopus marinkellei,75,CR,A2ace+3ce,,
+Atelopus minutulus,75,CR,A3ce,,"Reduccio?n del taman?o de la poblacio?n, una reduccio?n del a?rea de ocupacio?n (AOO), ? 80%"
+Atelopus mittermeieri,50,EN,"A2ce; B1ab(i,ii,v)+2ab(i,ii,v); C2a(i)",< 5.000 km2 ,una reduccio?n del a?rea de ocupacio?n ? 30%
+Atelopus monohernandezi,75,CR,A2e,,Reduccio?n del taman?o de la poblacio?n observada ? 80%
+Atelopus muisca,75,CR,A2ace; B2ab(v),< 10 km2 ,
+Atelopus subornatus,75,CR,A3ce,,"Reduccio?n del taman?o de la poblacio?n, una reduccio?n del a?rea de ocupacio?n (AOO), ? 80%"
+Bolitoglossa capitana,75,CR,B2ab(iii),< 10 km2 ,
+Bolitoglossa lozanoi,25,VU,,< 20.000 km2 ,
+Bolitoglossa pandi,50,EN,B1ab(iii),< 5.000 km2 ,
+Centrolene buckleyi,25,VU,A2a,,una reduccio?n del a?rea de ocupacio?n ? 30%
+Centrolene daidaleum,25,VU,B1ab(iii),< 20.000 km2 ,
+Centrolene petrophilum,50,EN,B1ab(iii),< 5.000 km2 ,
+Hyalinobatrachium esmeralda,50,EN,B1ab(iii),< 5.000 km2 ,
+Hyalinobatrachium ibama,25,VU,B1ab(iii),< 20.000 km2 ,
+Hyloscirtus denticulentus ,50,EN,B1ab(iii),< 5.000 km2 ,
+Hyloscirtus lindae,25,VU,B1ab(iii),< 20.000 km2 ,
+Hyloscirtus lynchi,50,EN,B1ab(iii),< 5.000 km2 ,
+Hyloscirtus piceigularis,50,EN,B1ab(iii),< 5.000 km2 ,
+Hyloscirtus torrenticola,25,VU,B1ab(iii),< 20.000 km2 ,
+Hyloxalus ruizi ,75,CR,"B1ab(iii,v)+2ab(iii,v)",< 100 km2 ,
+Hyloxalus vergeli ,25,VU,D2,,nu?mero de localidades ?5 ti?picamente: AOO < 20 km2
+Hypodactylus dolops,25,VU,,,
+Pristimantis affinis ,25,VU,D2,,nu?mero de localidades ?5 ti?picamente: AOO < 20 km2
+Pristimantis bacchus,50,EN,B1ab(iii),< 5.000 km2 ,
+Pristimantis bicolor,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis carranguerorum,25,VU,,< 20.000 km2 ,
+Pristimantis douglasi,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis elegans,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis frater,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis jorgevelosai ,50,EN,"B1ab(iii,v)",< 5.000 km2 ,
+Pristimantis merostictus,50,EN,B1ab(iii),< 5.000 km2 ,
+Pristimantis petersorum,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis pugnax,25,VU,B1ab(iii),< 20.000 km2 ,
+Pristimantis renjiforum ,50,EN,B1ab(iii),< 5.000 km2 ,
+Pristimantis spilogaster ,50,EN,B1ab(iii),< 5.000 km2 ,
+Rulyrana adiazeta,25,VU,B1ab(iii),< 20.000 km2 ,
+Strabomantis ingeri,25,VU,B1ab(iii),< 20.000 km2 ,

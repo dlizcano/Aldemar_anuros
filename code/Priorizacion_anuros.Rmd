@@ -1,0 +1,844 @@
+---
+title: "Priorización con anuros amenazados"
+author: "Aldemar Acevedo, Diego J. Lizcano, et al..."
+date: "April 30, 2016"
+output: word_document
+---
+
+
+# Introducción
+
+Anfibios crisis, hongo.
+Colombia como más rico en anfibios.
+Pocos datos y modelos de distribución con maxent.
+
+Selección de áreas prioritarias con Marxan.
+Teniendo en cuenta el costo de oportunidad.
+  
+
+[Ver Wilson et al 2011](http://rstb.royalsocietypublishing.org/content/royptb/366/1578/2670.full.pdf).  
+[Ver Carwardine et al 2008](http://www.pnas.org/content/105/32/11446.full)
+
+[Costo de oportunidad de Naidoo](https://www.researchgate.net/publication/236247152_Global-scale_mapping_of_economic_benefits_from_agricultural_lands_Implications_for_conservation_priorities)
+
+
+
+
+# Método _breve_
+
+## Colección de datos en colecciones
+
+Se visitó la colección del ICN y xxx para hacer una base de datos de sitios de colección...
+
+## Modelación de la distribución de especies amenazadas
+
+Se modelo la distribución con MaxEnt...
+
+## Unidades de conservación y priorización
+
+Se definieron unidades de conservación hexagonales de 0.1 grado de diámetro para el área de estudio.  
+
+La priorización se realizó con el algoritmo de búsqueda "annealing" espacialmente explicito, implementado en Marxan y ejecutado desde la interface de la línea de comandos de R. Se consideraron cuatro portafolios cada uno con 500 soluciones, variando las metas de conservación en 75, 50, 25 % más un portafolio mezclado, dejando fijo el species penalty factor for species in two units as recomended by Chang et al. 20xx
+
+## Metas de conservación para las especies
+Las metas de conservación variaron entre 25% 50% y 75% del área de distribución por proteger para cada una de las especies amenazadas, mas uno mezcaldo...
+
+## Estimación de costos de oportunidad.
+
+Se elaboró un mapa de costos de oportunidad de agricultura y ganadería según Naidoo & Iwamura (2007), con información espacial del SIGOT a nivel municipal con la producción de café, cacao, plátano, papa y yuca. La producción se multiplico por el precio del producto según la superintendencia de industria y comercio y corabastos, más la producción ganadera multiplicada por el precio de la carne. Los costos de cada producto se dividieron por el área de cada municipio y luego se agregaron en un mapa. El mapa de costo de oportunidad sirvió como base para establecer los costos por unidad de conservación. 
+
+## Escenarios para la identificación de áreas prioritarias
+
+Se consideraron cuatro scenarios cada uno con cuatro portafolios.
+
+ 1.	Conservación de 25% 50% y 75%  del área de las especies amenazadas, con igual costo de área, sin tener en cuenta la red de áreas protegidas y con targets diferenciados por especie (75 %, critica, 50 % en peligro, 25 vulnerable) 
+
+ 2.	Conservación de 25% 50% y 75%  teniendo en cuenta el costo del area (costo de oportunidad) y sin tener en cuenta la red de áreas protegidas.
+
+ 3.	Conservación de  25% 50% y 75%  teniendo en cuenta el costo de oportunidad y teniendo en cuenta red actual de áreas protegidas.
+
+ 4.	Conservación de  25% 50% y 75%  teniendo en cuenta el costo de oportunidad, teniendo en cuenta red actual de áreas protegidas y variando el grado de fragmentación de las áreas seleccionadas.
+
+
+# Resultados  
+
+## Modelos de distribución
+
+Se modelaron 42 especies amenazadas 
+
+```{r rasterstack, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, message=FALSE, fig.height=9, fig.width=5}
+
+
+# necessary packages
+library(sp) 	# provides classes for spatial data in R
+library(raster)	# provides classes and methods for raster datasets
+
+# necessary - but attention for Mac users!
+library(rgdal)	# interface to the Geospatial Data Abstraction Library to read and write different spatial file formats
+
+# usefull packages
+library(maptools)	# some specific spatial methods and conversion methods for spatial data 
+library(fields)		# contains methods for spatial interpolation and statistics but also nice color palettes fro mapping
+library(RColorBrewer) # color palettes for mapping
+library(marxan)
+library(rasterVis)
+# library(viridis)
+#library(gstat)
+library(marxan)
+library(stringr)
+
+library(ggplot2)
+library(gridExtra)
+
+crs.geo <- crs("+proj=longlat +ellps=WGS84 +datum=WGS84")    # geographical, datum WGS84
+sps<-list.files("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/data")
+sp.list<-list()
+e<- extent(-77.5, -71.1, 0, 11.5) # define etent window
+# for(i in 1:length(sps)){
+#   sp_x<-raster(paste("data/", sps[i], "/", sps[i], ".tif", sep = ""))
+#   proj4string(sp_x) <- crs.geo     # define projection system of our data
+#   #extent (sp_x) <- e #put max extent
+#   sp.list[[i]] <- sp_x
+#   print(res(sp.list[[i]]))
+#   print(extent(sp_x))
+# }
+
+# list files in folder
+raster_data <- list.files("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/data")
+# w <- raster("data/Allobates_juanii/Allobates_juanii.tif", crs="+proj=longlat +datum=WGS84 +ellps=WGS84")
+w <- raster("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp/boundbox1.tif", crs="+proj=longlat +datum=WGS84 +ellps=WGS84") # get the bounding box
+
+
+sp.list<-list() # crea lista vacia para almacenar especies
+
+
+# all values >= -1 and <= 0.1 become 0 # fix sp chiquita problem
+m <- c(-1, 0.1, 0, 0.2, 2, 1)
+rclmat <- matrix(m, ncol=3, byrow=TRUE)
+# rc <- reclassify(w, rclmat)
+
+fun <- function(x) { x[is.na(x)] <- 0; return(x)} # funtion to convert NA to O for Marxan
+
+#### read all species files in a list... slow!
+for (i in 1:length(raster_data)){
+  r <- raster(paste("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/data/", raster_data[i], "/", raster_data[i], ".tif", sep = ""), crs=crs.geo)
+  rp <- projectRaster(from = r, to = w,
+                      filename = file.path ("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/crop/", raster_data[i]),
+                      method = "bilinear",
+                      format = "raster",
+                      overwrite = TRUE)
+  rc <- reclassify(rp, rclmat) # corrige ceros
+  rm <- merge(rc, w) # extiende todos los chiquitos a w
+  rc3 <- calc(rm, fun) # remueve NAs con funcion de linea 102
+  sp.list[[i]] <- rc3 # adiciona a la lista
+}
+
+
+sp_staked<- stack(sp.list) # crea el stack de la lista
+
+plot(sum(sp_staked), main="species richness")# grafica riqueza (suma)
+
+# remueve la lista de la memoria
+rm (sp.list)
+
+```
+
+## Unidades de conservacion y mapa de costos de oportunidad
+
+```{r plan_unit, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE, fig.height=9, fig.width=5}
+
+# load marxan R package
+library(marxan)
+
+# load example data
+#data(taspu, tasinvis)
+
+# real data
+# cons_unit<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+               # layer="Hexagons_25km2", stringsAsFactors=FALSE)
+cons_unit<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="hexagons_dia01_clip", stringsAsFactors=FALSE)
+cons_unit$id<-cons_unit$id+1 #start in 1
+cons_unit$cost<-as.numeric(cons_unit$cost) #make cost numeric
+cons_unit$id<-as.integer(cons_unit$id)
+cons_unit$status<-as.integer(cons_unit$status)
+
+geo <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84")
+
+cafe<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="Cafe2012Ton", stringsAsFactors=FALSE)
+cafe.geo <- spTransform(cafe, geo) 
+cafe.geo$valor<-((cafe$valor*1000*5200)/3000)/cafe.geo$AREA_OFICI# 1000 de ton a kilo, then price, then dolar, area
+
+
+papa<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="Papa2011Ton", stringsAsFactors=FALSE)
+papa.geo <- spTransform(papa, geo) 
+papa.geo$valor<-((papa$valor*1000*900)/3000)/papa.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
+
+
+cacao<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="Cacao2012Ton", stringsAsFactors=FALSE)
+cacao.geo <- spTransform(cacao, geo) 
+cacao.geo$valor<-((cacao$valor*1000*4500)/3000)/cacao.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
+
+
+platano<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="Platano2012Ton", stringsAsFactors=FALSE)
+platano.geo <- spTransform(platano, geo) 
+platano.geo$valor<-((platano$valor*1000*1170)/3000)/platano.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
+
+
+yuca<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="Yuca2012Ton", stringsAsFactors=FALSE)
+yuca.geo <- spTransform(yuca, geo) 
+yuca.geo$valor<-((yuca$valor*1000*1500)/3000)/yuca.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
+
+
+vacas<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+                layer="CabezasBovinos2006", stringsAsFactors=FALSE)
+vacas.geo <- spTransform(vacas, geo) 
+vacas.geo$valor<-((vacas$valor*250*3000)/3000)/vacas.geo$AREA_OFICI # 250kilocabeza, then price, then dolar
+
+
+############# rasterize polygon daya frame using w as template
+cafe_rast<-rasterize.gdal(cafe.geo[,8], w) # 8 es la columna valor
+papa_rast<-rasterize.gdal(papa.geo[,8], w) # 8 es la columna valor
+cacao_rast<-rasterize.gdal(cacao.geo[,8], w) # 8 es la columna valor
+platano_rast<-rasterize.gdal(platano.geo[,8], w) # 8 es la columna valor
+yuca_rast<-rasterize.gdal(yuca.geo[,8], w) # 8 es la columna valor
+vacas_rast<-rasterize.gdal(vacas.geo[,8], w) # 8 es la columna valor
+
+
+
+
+### costo por km2
+costo_map1<-stack(cafe_rast,papa_rast,cacao_rast,platano_rast,yuca_rast,vacas_rast)
+costo_map2<-sum(costo_map1)
+
+# Remueve rasters de memoria
+rm (cafe_rast)
+rm (papa_rast)
+rm (cacao_rast)
+rm (platano_rast)
+rm (yuca_rast)
+rm (vacas_rast)
+
+
+#get cost using the polygon hexagon map VVVERRRY SLOW !!!!!
+cost_by_hexagon <- extract(costo_map2, cons_unit, weights=TRUE, fun=mean)
+# change NAS by average
+ind<-which(is.na(cost_by_hexagon)==TRUE)
+cost_by_hexagon[ind]<-960 #### put this value 1st quartil to NA
+cons_unit$cost<-cost_by_hexagon # asign planning unit costs to hexagons
+
+# get planning unit costs from ArcGis Table
+# costtable<-read.csv("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp/tablepop4.txt")
+# cons_unit$cost<-costtable$MEAN # this is the column
+   
+# plot(cons_unit, col=cons_unit$cost)  ##### VERY S L O W !!!
+# spplot(cons_unit, c("cost", "status"),edge.col = "transparent",basemap="road", grayscale=TRUE) 
+spplot(cons_unit, c("cost"), edge.col = "transparent",basemap="road", grayscale=TRUE) 
+
+
+```
+
+Falta afinar el mapa de costos para incluir la probabilidad de deforestacion!... Too complex!!! mejor no incluirla. 
+
+
+## Primer escenario
+
+```{r scenario1, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, fig.height=9, fig.width=5, message=FALSE}
+
+
+# make reserve systems 
+# lets asume first equal cost and no protected areas
+# copy taspu
+cons_unit_scn1<-cons_unit
+
+# set costs
+cons_unit_scn1@data$cost<-1
+
+# set status values
+# note the 'L' after the zero is used to indicate
+# that we mean the integer zero and not the decimal
+# place number zero
+cons_unit_scn1@data$status<-0L
+
+# Here, we will generate a portfolio of reserve systems that represent 100%, 50% 50% of each species. 
+# results<-marxan(taspu, tasinvis, targets="20%", NUMREPS=100L, BLM=0)
+
+# Get the diferencia targets from a table IUCN
+targ<-read.csv("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/code/targets_per_sp.csv")
+target_percent<-paste(targ$target_sp,"%", sep="") 
+
+
+result_scn75<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="75%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets75<-as.data.frame(targetsmet(result_scn75)) # Make a data frame using targets meet
+sp_notargeted75<-which(apply(targets75, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names75<-sps[sp_notargeted75]
+
+
+
+result_scnmix<-marxan(cons_unit_scn1, sp_staked, 
+                     targets=target_percent, # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0)
+
+targetsdif<-as.data.frame(targetsmet(result_scnmix)) # Make a data frame using targets meet
+sp_notargeteddif<-which(apply(targetsdif, 2, sum)<=0) # which species do not meet any target
+sp_notargete_namesdif<-sps[sp_notargeteddif]
+
+
+
+
+result_scn50<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="50%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets50<-as.data.frame(targetsmet(result_scn50)) # Make a data fram using targets meet
+sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names50<-sps[sp_notargeted50]
+
+
+result_scn25<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="25%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets25<-as.data.frame(targetsmet(result_scn25)) # Make a data frame using targets meet
+sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names25<-sps[sp_notargeted25]
+
+# histogram of proportion of species adequately
+# represented in each solution
+# if many of the solutions adequately represented the classes
+# most of the bins would be close to 1, whereas if 
+# the solutions failed to represent the classes most of the
+# bins would be close to zero
+
+# create 2 plotting areas in the one window
+op<-par(mfrow=c(4,1))
+  hist(rowMeans(targetsmet(result_scn75)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 75',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+  hist(rowMeans(targetsmet(result_scn50)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 50',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+    hist(rowMeans(targetsmet(result_scn25)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 25',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+    hist(rowMeans(targetsmet(result_scnmix)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in mix portfolio',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+  par(op)  
+    
+# geoplot for "best solution" the one with the lowest objective function value (i.e., the most efficient solution) 
+plot(result_scn75, 0)
+plot(result_scn50, 0)
+plot(result_scn25, 0)
+plot(result_scnmix, 0)
+# geoplot for selection frequencies
+# plot(results)
+
+# plot distribution of sp 5
+# spplot(result_scn1, 5, var='occ')
+
+# plot richness in planning units
+spplot(result_scn75, var='occ', basemap="road", grayscale=TRUE)
+
+
+
+```
+
+Especies que no cumplen con 75%: `r sp_notargete_names75` .  
+
+
+Especies que no cumplen con 50%: `r sp_notargete_names50`.  
+
+
+Especies que no cumplen con 25%: `r sp_notargete_names25`.  
+
+
+Especies que no cumplen con mix%: `r sp_notargete_namesdif`.  
+
+
+
+## Segundo escenario
+
+```{r scenario2, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, fig.height=9, fig.width=5, message=FALSE}
+
+#  2. Conservacion de de 75%, 50%, 25% y mix, teniendo en cuenta el costo de oportunidad y 
+# sin tener en cuenta la red de areas protegidas.
+  
+# geoplot richness in planning units
+# with a satellite base map
+# spplot(result_scn1, var='occ', basemap='satellite')
+
+
+# get planning unit costs from ArcGis Table
+# costtable<-read.csv("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp/tablepop4.txt")
+# pu.costs<-costtable$MEAN # this is the column
+pu.costs<-cost_by_hexagon # asign planning unit costs to hexagons
+
+
+
+# get planning unit ids
+pu.ids<-cons_unit@data$id  
+# get planning unit statuses from original file
+# pu.status<-cons_unit@data$status
+  
+# copy input parameters and data in results2, 
+# change planning unit costs and statuses
+# rerun MARXAN,
+# load outputs into R and store them in results3
+results2_75<-update(result_scn75, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status)) # cero here
+
+results2_50<-update(result_scn50, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+results2_25<-update(result_scn25, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+
+results2_mix<-update(result_scnmix, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+# Lets compare 3 portfolios
+# get levels of representation in each portfolio
+results75.repr<-rowMeans(targetsmet(results2_75))
+results50.repr<-rowMeans(targetsmet(results2_50))
+results25.repr<-rowMeans(targetsmet(results2_25))
+resultsmix.repr<-rowMeans(targetsmet(results2_mix))
+
+
+targets75<-as.data.frame(targetsmet(results2_75)) # Make a data frame using targets meet
+sp_notargeted75<-which(apply(targets75, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names75<-sps[sp_notargeted75]
+
+targets50<-as.data.frame(targetsmet(results2_50)) # Make a data fram using targets meet
+sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names50<-sps[sp_notargeted50]
+  
+targets25<-as.data.frame(targetsmet(results2_25)) # Make a data fram using targets meet
+sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names25<-sps[sp_notargeted25] 
+
+targetsdif<-as.data.frame(targetsmet(results2_mix)) # Make a data frame using targets meet
+sp_notargeteddif<-which(apply(targetsdif, 2, sum)<=0) # which species do not meet any target
+sp_notargete_namesdif<-sps[sp_notargeteddif]
+
+print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
+print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
+
+
+
+
+
+# create 4 plotting areas in the one window
+op2<-par(mfrow=c(4,1))
+
+  # histogram of first portfolio
+  hist(results75.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 75%"
+  )
+  
+  # print best level of representation
+  # print(max(results100.repr))
+  
+  # histogram of second portfolio
+  # if you see a giant single rectangle this means
+  # all the solutions have the same level of representation
+  hist(results50.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 50%"
+  )
+  
+  # print best level of representation
+  # print(max(results50.repr))
+  
+    # histogram of second portfolio
+  # if you see a giant single rectangle this means
+  # all the solutions have the same level of representation
+  hist(results25.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 25%"
+  )
+  
+    hist(resultsmix.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with mix%"
+  )
+  
+par(op2)
+
+# print best level of representation
+# print(max(results25.repr))
+print("best level of representation")
+print(max(results75.repr))
+print(max(results50.repr))
+print(max(results25.repr))
+print(max(resultsmix.repr))
+
+print("best solution")
+  # make a geoplot of the best solution
+plot(results2_75, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_50, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_25, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_mix, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+
+  # planing uniit selection frecuency
+  plot(results2_75, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results2_50, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results2_25, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)  
+  plot(results2_mix, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  
+# The solutions in this portfolio are fairly fragmented. 
+# All the solutions so far were made under the assumption that all planning units have equal acquisition costs 
+# and that Col does not have any protected areas. Not true!
+  
+  
+
+
+```
+
+
+## Tercer escenario
+
+```{r scenario3, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, fig.height=9, fig.width=5, message=FALSE}
+
+#  3. Conservacion de de 75%, 50%, 25% y mix teniendo en cuenta el costo de oportunidad y 
+# teniendo en cuenta red actual de areas protegidas.
+  
+# geoplot richness in planning units
+# with a satellite base map
+# spplot(result_scn1, var='occ', basemap='satellite')
+
+
+# get planning unit costs from ArcGis Table
+# costtable<-read.csv("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp/tablepop4.txt")
+# pu.costs<-as.numeric(costtable$MEAN) # this is the column
+
+pu.costs<-cost_by_hexagon
+
+
+# get planning unit ids
+pu.ids<-cons_unit@data$id 
+PAs<-as.integer(cons_unit$status) # get protected areas 
+# get planning unit statuses from original file
+# pu.status<-cons_unit@data$status
+  
+# copy input parameters and data in results2, 
+# change planning unit costs and statuses
+# rerun MARXAN,
+# load outputs into R and store them in results3
+results3_75<-update(results2_75, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs)) 
+
+results3_50<-update(results2_50, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+
+results3_25<-update(results2_25, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+
+results3_mix<-update(results2_mix, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+
+
+
+# Lets compare 3 portfolios
+# get levels of representation in each portfolio
+results75.repr3<-rowMeans(targetsmet(results3_75))
+results50.repr3<-rowMeans(targetsmet(results3_50))
+results25.repr3<-rowMeans(targetsmet(results3_25))
+resultsmix.repr3<-rowMeans(targetsmet(results3_mix))
+
+
+
+targets75<-as.data.frame(targetsmet(results3_75)) # Make a data frame using targets meet
+sp_notargeted75<-which(apply(targets75, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names75<-sps[sp_notargeted75]
+
+targets50<-as.data.frame(targetsmet(results3_50)) # Make a data fram using targets meet
+sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names50<-sps[sp_notargeted50]
+  
+targets25<-as.data.frame(targetsmet(results3_25)) # Make a data fram using targets meet
+sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names25<-sps[sp_notargeted25] 
+
+targetsdif<-as.data.frame(targetsmet(results3_mix)) # Make a data frame using targets meet
+sp_notargeteddif<-which(apply(targetsdif, 2, sum)<=0) # which species do not meet any target
+sp_notargete_namesdif<-sps[sp_notargeteddif]
+
+print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
+print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
+
+
+
+# create 3 plotting areas in the one window
+op3<-par(mfrow=c(4,1))
+
+  # histogram of first portfolio
+  hist(results75.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 75%"
+  )
+  
+  # print best level of representation
+  #print(max(results100.repr))
+  
+  # histogram of second portfolio
+  # if you see a giant single rectangle this means
+  # all the solutions have the same level of representation
+  hist(results50.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 50%"
+  )
+  
+  # print best level of representation
+  # print(max(results50.repr))
+  
+    # histogram of second portfolio
+  # if you see a giant single rectangle this means
+  # all the solutions have the same level of representation
+  hist(results25.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 25%"
+  )
+    hist(resultsmix.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with mix%"
+  )
+
+ par(op2) 
+  
+    
+  # print best level of representation
+  # print(max(results25.repr))
+  
+
+  # make a geoplot of the best solution
+  plot(results3_75, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_50, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_25, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_mix, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  
+  # planing uniit selection frecuency
+  plot(results3_75, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_50, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_25, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)  
+  plot(results3_mix, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE) 
+  
+# The solutions in this portfolio are fairly fragmented. 
+# All the solutions so far were made under the assumption that all planning units have equal acquisition costs 
+# and that Col does not have any protected areas. Not true!
+
+  
+targets75<-as.data.frame(targetsmet(results3_75)) # Make a data frame using targets meet
+sp_notargeted75<-which(apply(targets75, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names75<-sps[sp_notargeted75]
+
+targets50<-as.data.frame(targetsmet(results3_50)) # Make a data fram using targets meet
+sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names50<-sps[sp_notargeted50]
+  
+targets25<-as.data.frame(targetsmet(results3_25)) # Make a data fram using targets meet
+sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names25<-sps[sp_notargeted25] 
+
+targetsdif<-as.data.frame(targetsmet(results3_mix)) # Make a data frame using targets meet
+sp_notargeteddif<-which(apply(targetsdif, 2, sum)<=0) # which species do not meet any target
+sp_notargete_namesdif<-sps[sp_notargeteddif]
+
+print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
+print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
+  
+    
+
+```
+
+## Escenario cuatro para mix % 
+
+```{r scenario4, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, fig.height=9, fig.width=5, message=FALSE}
+
+# All the solutions in our current portfolio, results3, seem to be fairly fragmented. 
+# If implemented as protected areas, these solutions might be associated with poor connectivity 
+# and high maintenance costs. To reduce fragmentation, we can increase the boundary length
+# modifier (BLM). However, in order to maintain adequate levels of representation for the 
+# species, MARXAN will select more expensive planning units. 
+# How can we pick an appropriate BLM while still making sure the acquisition costs are adequate cost? 
+# Let's generate six more portfolios, each using a different BLM, and plot the trade-off 
+# between acquisition cost and fragmentation using the best solutions in each portfolio.
+
+## generate list of portfolios with different BLMS
+# make vector BLM parameters to use
+blm.pars=c(0, 100, 250, 500, 750, 1000)
+
+# create list with different portfolio for each BLM
+results4_mix<-list()
+for (i in seq_along(blm.pars)) {
+  results4_mix[[i]]<-update(results3_mix, ~opt(BLM=blm.pars[i], NUMREPS=10L))
+}
+
+## extract data from portfolios
+# create empty vectors to store values
+cost<-c()
+con<-c()
+blm<-c()
+
+# extract values for best solutions
+for (i in seq_along(blm.pars)) {
+  cost<-append(cost, summary(results4_mix[[i]])[["Cost"]])
+  con<-append(con, summary(results4_mix[[i]])[["Connectivity"]])
+  blm<-append(blm, rep(blm.pars[i], nrow(summary(results4_mix[[i]]))))
+}
+
+## plot trade-off between shortfall and connectivity
+# get colours for legend
+legend.cols<-c("#FFFFB2", "#FED976", "#FEB24C", "#FD8D3C", "#F03B20", "#BD0026")
+pt.cols<-legend.cols[match(blm, blm.pars)]
+
+# reset plotting window
+par(mfrow=c(1,1))
+
+# plot trade-off data
+# higher shortfall values means worse representation
+# higher connectivity values mean more fragmentation
+plot(cost~con, bg=pt.cols, col='black', ylab='Cost', xlab='Connectivity', pch=21,
+     main='Trade-off between cost and connectivity')
+abline(lm(cost~con))
+
+# add legend
+legend("topright", legend=blm.pars, col='black', pt.bg=legend.cols, pch=21, title='BLM')
+
+# Looking at this curve and depending on the total budget, you might decide that second portfolio 
+# in results4 achieves an acceptable level of representation and fragmentation. 
+# Let's generate another portfolio of solutions with BLM=0.0001, and then 
+# make some geoplots to compare it to results3.
+
+
+# make new solutions with BLM=0.0001
+results5<-update(results3_mix, ~opt(BLM=0.0001))
+
+# geoplot showing differences between the best solution in each portfolio
+plot(results5, results3_mix, i=0, j=0)
+
+# geoplot showing difference in selection frequencies between the two objects
+# black colours indicate that units are already in a protected area
+# blue colours indicate that units were more often selected in results4[[2]],
+# and red colours indicate that they were often selected in results3
+plot(results5, results3_mix)
+
+# So now, in our final portfolio, we have one hundred solutions. 
+# How can we compare them all and decide on a final prioritisation to implement? 
+# We don't time time to make 100 maps; while the maps this R package makes are pretty, 
+# they are not that pretty. Instead, we could make some dotcharts that let us compare various 
+# properties of the solutions.
+
+# make dotchart showing the score of each solution
+# the score describes the overall value of the prioritisations based on our criteria
+# the lower the value, the better the solution
+# the best solution is coloured in red
+dotchart(results5, var='score')
+
+# make dotchart showing the connectivity of the solutions
+# solutions with lower values are more clustered
+# solutions with higher values are more fragmented
+# argument to n specifies the number of solutions to plot
+# argument to nbest specifies number of solutions to colour in red
+dotchart(results5, var='con', nbest=5, n=50)
+
+
+# How can we summarise the main themes of variation in our portfolio?
+# Fortunately, statisticians solved this problem a long time ago. 
+# We can use ordination techniques to create a few variables that describe commonalities 
+# among the solutions, and visualise the main sources of variation in a small number of 
+# dimensions.
+
+## dendrogram showing differences between solutions based on which planning units 
+## were selected (using Bray-Curtis distances by default)
+# the solutions are shown at the (bottom) tips of the tree.
+# solutions that occupy nearby places in tree
+# have similar sets of planning units selected.
+# the best prioritisation is coloured in red.
+dendrogram(results5, type='dist', var='selections')
+
+## same dendrogram as above but with the best 10 prioritisations coloured in red
+# if all the red lines connect together at the bottom of the dendrogram
+# this means that all the best prioritisations are really similar to each other,
+# but if they connect near the top of the dendrogram then this means that
+# some of the best prioritisations have totally different sets of planning units
+# selected for protection.
+dendrogram(results5, type='dist', var='selections', nbest=5)
+
+## ordination plot showing differences between solutions based on the number of units
+## occupied by each vegetation class (using MDS with Bray-Curtis distances)
+# we can also use multivariate techniques to see how the solutions vary
+# based on how well they represent different vegetation classes.
+# the numbers indicate solution indices.
+# solutions closer to each other in this plot have more
+# similar levels of representation for the same species.
+# the size of the numbers indicate solution quality,
+# the bigger the number, the higher the solution score.
+ordiplot(results5, type='mds', var='occheld', method='bray')
+
+# ordination plot showing differences between solutions based on the amount held 
+# by each vegetation class (using a principle components analysis)
+# labels are similar to the previous plot.
+# the arrows indicate the variable loadings.
+ordiplot(results5, type='pca', var='amountheld')
+
+  
+  
+```
+
+

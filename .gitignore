@@ -45,3 +45,9 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Rstudio temporals
+.Rproj.user
+Priorizacion_anuros_files/
+Priorizacion_anuros_cache/
+

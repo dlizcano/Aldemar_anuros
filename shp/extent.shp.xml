@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><MetaID>{D7080051-A403-4D64-93DB-06FCBFFFA2C1}</MetaID><CreaDate>20160429</CreaDate><CreaTime>08192800</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files (x86)\ArcGIS\ArcToolbox\Toolboxes\Conversion Tools.tbx\RasterToPolygon" Date="20160429" Time="081928">RasterToPolygon rast_agreado C:\Users\Diego\Documents\CodigoR\Aldemar_anuros\shp\extent.shp SIMPLIFY VALUE</Process></lineage></DataProperties></Esri></metadata>

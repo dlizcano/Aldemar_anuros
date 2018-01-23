@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><MetaID>{AA3CC0CE-77AA-46BF-83AD-1BB49D145AD1}</MetaID><CreaDate>20160429</CreaDate><CreaTime>08182800</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files (x86)\ArcGIS\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\Slice" Date="20160429" Time="081828">Slice Andinobates_virolinensis.tif C:\Users\Diego\Documents\CodigoR\Aldemar_anuros\shp\rast_agreado 1 EQUAL_INTERVAL 1</Process></lineage></DataProperties></Esri></metadata>
