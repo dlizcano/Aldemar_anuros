@@ -1,8 +1,10 @@
 ---
-title: "Priorización con anuros amenazados"
+title: "PriorizaciÃ³n con anuros amenazados"
 author: "Aldemar Acevedo, Diego J. Lizcano, et al..."
 date: "April 30, 2016"
-output: word_document
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 
@@ -76,6 +78,7 @@ library(raster)	# provides classes and methods for raster datasets
 # necessary - but attention for Mac users!
 library(rgdal)	# interface to the Geospatial Data Abstraction Library to read and write different spatial file formats
 
+
 # usefull packages
 library(maptools)	# some specific spatial methods and conversion methods for spatial data 
 library(fields)		# contains methods for spatial interpolation and statistics but also nice color palettes fro mapping
@@ -104,9 +107,9 @@ e<- extent(-77.5, -71.1, 0, 11.5) # define etent window
 # }
 
 # list files in folder
-raster_data <- list.files("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/data")
+raster_data <- list.files("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/data")
 # w <- raster("data/Allobates_juanii/Allobates_juanii.tif", crs="+proj=longlat +datum=WGS84 +ellps=WGS84")
-w <- raster("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp/boundbox1.tif", crs="+proj=longlat +datum=WGS84 +ellps=WGS84") # get the bounding box
+w <- raster("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp/boundbox1.tif", crs="+proj=longlat +datum=WGS84 +ellps=WGS84") # get the bounding box
 
 
 sp.list<-list() # crea lista vacia para almacenar especies
@@ -121,9 +124,9 @@ fun <- function(x) { x[is.na(x)] <- 0; return(x)} # funtion to convert NA to O f
 
 #### read all species files in a list... slow!
 for (i in 1:length(raster_data)){
-  r <- raster(paste("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/data/", raster_data[i], "/", raster_data[i], ".tif", sep = ""), crs=crs.geo)
+  r <- raster(paste("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/data/", raster_data[i], "/", raster_data[i], ".tif", sep = ""), crs=crs.geo)
   rp <- projectRaster(from = r, to = w,
-                      filename = file.path ("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/crop/", raster_data[i]),
+                      filename = file.path ("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/crop/", raster_data[i]),
                       method = "bilinear",
                       format = "raster",
                       overwrite = TRUE)
@@ -156,7 +159,7 @@ library(marxan)
 # real data
 # cons_unit<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
                # layer="Hexagons_25km2", stringsAsFactors=FALSE)
-cons_unit<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+cons_unit<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="hexagons_dia01_clip", stringsAsFactors=FALSE)
 cons_unit$id<-cons_unit$id+1 #start in 1
 cons_unit$cost<-as.numeric(cons_unit$cost) #make cost numeric
@@ -165,49 +168,49 @@ cons_unit$status<-as.integer(cons_unit$status)
 
 geo <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84")
 
-cafe<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+cafe<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="Cafe2012Ton", stringsAsFactors=FALSE)
 cafe.geo <- spTransform(cafe, geo) 
 cafe.geo$valor<-((cafe$valor*1000*5200)/3000)/cafe.geo$AREA_OFICI# 1000 de ton a kilo, then price, then dolar, area
 
 
-papa<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+papa<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="Papa2011Ton", stringsAsFactors=FALSE)
 papa.geo <- spTransform(papa, geo) 
 papa.geo$valor<-((papa$valor*1000*900)/3000)/papa.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
 
 
-cacao<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+cacao<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="Cacao2012Ton", stringsAsFactors=FALSE)
 cacao.geo <- spTransform(cacao, geo) 
 cacao.geo$valor<-((cacao$valor*1000*4500)/3000)/cacao.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
 
 
-platano<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+platano<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="Platano2012Ton", stringsAsFactors=FALSE)
 platano.geo <- spTransform(platano, geo) 
 platano.geo$valor<-((platano$valor*1000*1170)/3000)/platano.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
 
 
-yuca<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+yuca<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="Yuca2012Ton", stringsAsFactors=FALSE)
 yuca.geo <- spTransform(yuca, geo) 
 yuca.geo$valor<-((yuca$valor*1000*1500)/3000)/yuca.geo$AREA_OFICI # 1000 de ton a kilo, then price, then dolar
 
 
-vacas<-readOGR("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/shp",
+vacas<-readOGR("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/shp",
                 layer="CabezasBovinos2006", stringsAsFactors=FALSE)
 vacas.geo <- spTransform(vacas, geo) 
 vacas.geo$valor<-((vacas$valor*250*3000)/3000)/vacas.geo$AREA_OFICI # 250kilocabeza, then price, then dolar
 
 
 ############# rasterize polygon daya frame using w as template
-cafe_rast<-rasterize.gdal(cafe.geo[,8], w) # 8 es la columna valor
-papa_rast<-rasterize.gdal(papa.geo[,8], w) # 8 es la columna valor
-cacao_rast<-rasterize.gdal(cacao.geo[,8], w) # 8 es la columna valor
-platano_rast<-rasterize.gdal(platano.geo[,8], w) # 8 es la columna valor
-yuca_rast<-rasterize.gdal(yuca.geo[,8], w) # 8 es la columna valor
-vacas_rast<-rasterize.gdal(vacas.geo[,8], w) # 8 es la columna valor
+cafe_rast<-rasterize(cafe.geo[,8], w) # 8 es la columna valor
+papa_rast<-rasterize(papa.geo[,8], w) # 8 es la columna valor
+cacao_rast<-rasterize(cacao.geo[,8], w) # 8 es la columna valor
+platano_rast<-rasterize(platano.geo[,8], w) # 8 es la columna valor
+yuca_rast<-rasterize(yuca.geo[,8], w) # 8 es la columna valor
+vacas_rast<-rasterize(vacas.geo[,8], w) # 8 es la columna valor
 
 
 
@@ -247,7 +250,8 @@ Falta afinar el mapa de costos para incluir la probabilidad de deforestacion!...
 
 
 ## Primer escenario
-
+### lets asume first equal cost, no protected areas, no edge effect
+### Conservacion de de 75%, 50%, 40%, 30%, 25%, 20%, y mix (CR=75%, EN=50%, VU=25%)
 ```{r scenario1, cache=TRUE,eval=TRUE,echo=FALSE,warning=FALSE, fig.height=9, fig.width=5, message=FALSE}
 
 
@@ -269,7 +273,7 @@ cons_unit_scn1@data$status<-0L
 # results<-marxan(taspu, tasinvis, targets="20%", NUMREPS=100L, BLM=0)
 
 # Get the diferencia targets from a table IUCN
-targ<-read.csv("C:/Users/Diego/Documents/CodigoR/Aldemar_anuros/code/targets_per_sp.csv")
+targ<-read.csv("D:/BoxFiles/Box Sync/CodigoR/Toshiba/Aldemar_anuros/code/targets_per_sp.csv")
 target_percent<-paste(targ$target_sp,"%", sep="") 
 
 
@@ -314,6 +318,61 @@ sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet 
 sp_notargete_names50<-sps[sp_notargeted50]
 
 
+
+result_scn40<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="40%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets40<-as.data.frame(targetsmet(result_scn40)) # Make a data frame using targets meet
+sp_notargeted40<-which(apply(targets40, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names40<-sps[sp_notargeted40]
+
+
+result_scn30<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="30%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets30<-as.data.frame(targetsmet(result_scn30)) # Make a data frame using targets meet
+sp_notargeted30<-which(apply(targets30, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names30<-sps[sp_notargeted30]
+
+
+result_scn20<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="20%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets20<-as.data.frame(targetsmet(result_scn20)) # Make a data frame using targets meet
+sp_notargeted20<-which(apply(targets20, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names20<-sps[sp_notargeted20]
+
+
+
+result_scn10<-marxan(cons_unit_scn1, sp_staked, 
+                     targets="10%", # level of protection for each sp
+                     spf=2, # species penalty factor for species
+                     NUMREPS=500L, # controls the number of solutions in our portfolio
+                     NCORES=2L, # number of threads for parallel processing
+                     BLM=0) # edge effect
+
+
+targets10<-as.data.frame(targetsmet(result_scn10)) # Make a data frame using targets meet
+sp_notargeted10<-which(apply(targets10, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names10<-sps[sp_notargeted10]
+
+
+
 result_scn25<-marxan(cons_unit_scn1, sp_staked, 
                      targets="25%", # level of protection for each sp
                      spf=2, # species penalty factor for species
@@ -325,7 +384,6 @@ result_scn25<-marxan(cons_unit_scn1, sp_staked,
 targets25<-as.data.frame(targetsmet(result_scn25)) # Make a data frame using targets meet
 sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
 sp_notargete_names25<-sps[sp_notargeted25]
-
 # histogram of proportion of species adequately
 # represented in each solution
 # if many of the solutions adequately represented the classes
@@ -334,7 +392,7 @@ sp_notargete_names25<-sps[sp_notargeted25]
 # bins would be close to zero
 
 # create 2 plotting areas in the one window
-op<-par(mfrow=c(4,1))
+op<-par(mfrow=c(7,1))
   hist(rowMeans(targetsmet(result_scn75)), freq=TRUE, xlim=c(0.6,1), las=1,
      main='Histogram of representation in portfolio 75',
      ylab='Frequency of solutions',
@@ -345,8 +403,28 @@ op<-par(mfrow=c(4,1))
      ylab='Frequency of solutions',
      xlab='Proportion of frog species adequately represented'
     )
-    hist(rowMeans(targetsmet(result_scn25)), freq=TRUE, xlim=c(0.6,1), las=1,
+  hist(rowMeans(targetsmet(result_scn40)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 40',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+  hist(rowMeans(targetsmet(result_scn30)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 30',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+  hist(rowMeans(targetsmet(result_scn25)), freq=TRUE, xlim=c(0.6,1), las=1,
      main='Histogram of representation in portfolio 25',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+    hist(rowMeans(targetsmet(result_scn20)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 20',
+     ylab='Frequency of solutions',
+     xlab='Proportion of frog species adequately represented'
+    )
+    hist(rowMeans(targetsmet(result_scn10)), freq=TRUE, xlim=c(0.6,1), las=1,
+     main='Histogram of representation in portfolio 10',
      ylab='Frequency of solutions',
      xlab='Proportion of frog species adequately represented'
     )
@@ -360,7 +438,10 @@ op<-par(mfrow=c(4,1))
 # geoplot for "best solution" the one with the lowest objective function value (i.e., the most efficient solution) 
 plot(result_scn75, 0)
 plot(result_scn50, 0)
+plot(result_scn40, 0)
+plot(result_scn30, 0)
 plot(result_scn25, 0)
+plot(result_scn20, 0)
 plot(result_scnmix, 0)
 # geoplot for selection frequencies
 # plot(results)
@@ -380,9 +461,12 @@ Especies que no cumplen con 75%: `r sp_notargete_names75` .
 
 Especies que no cumplen con 50%: `r sp_notargete_names50`.  
 
+Especies que no cumplen con 40%: `r sp_notargete_names40`. 
+Especies que no cumplen con 30%: `r sp_notargete_names30`. 
+
 
 Especies que no cumplen con 25%: `r sp_notargete_names25`.  
-
+Especies que no cumplen con 20%: `r sp_notargete_names20`. 
 
 Especies que no cumplen con mix%: `r sp_notargete_namesdif`.  
 
@@ -424,6 +508,25 @@ results2_50<-update(result_scn50, ~pu(pu.ids,
                                         cost=pu.costs, 
                                         status=cons_unit_scn1@data$status))
 
+
+results2_40<-update(result_scn40, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+
+results2_30<-update(result_scn30, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+
+results2_20<-update(result_scn20, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
+results2_10<-update(result_scn10, ~pu(pu.ids, 
+                                        cost=pu.costs, 
+                                        status=cons_unit_scn1@data$status))
+
 results2_25<-update(result_scn25, ~pu(pu.ids, 
                                         cost=pu.costs, 
                                         status=cons_unit_scn1@data$status))
@@ -437,6 +540,11 @@ results2_mix<-update(result_scnmix, ~pu(pu.ids,
 # get levels of representation in each portfolio
 results75.repr<-rowMeans(targetsmet(results2_75))
 results50.repr<-rowMeans(targetsmet(results2_50))
+results40.repr<-rowMeans(targetsmet(results2_40))
+results30.repr<-rowMeans(targetsmet(results2_30))
+results20.repr<-rowMeans(targetsmet(results2_20))
+results10.repr<-rowMeans(targetsmet(results2_10))
+
 results25.repr<-rowMeans(targetsmet(results2_25))
 resultsmix.repr<-rowMeans(targetsmet(results2_mix))
 
@@ -448,6 +556,24 @@ sp_notargete_names75<-sps[sp_notargeted75]
 targets50<-as.data.frame(targetsmet(results2_50)) # Make a data fram using targets meet
 sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
 sp_notargete_names50<-sps[sp_notargeted50]
+
+targets40<-as.data.frame(targetsmet(results2_40)) # Make a data fram using targets meet
+sp_notargeted40<-which(apply(targets40, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names40<-sps[sp_notargeted40]
+
+targets30<-as.data.frame(targetsmet(results2_30)) # Make a data fram using targets meet
+sp_notargeted30<-which(apply(targets30, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names30<-sps[sp_notargeted30]
+
+targets20<-as.data.frame(targetsmet(results2_20)) # Make a data fram using targets meet
+sp_notargeted20<-which(apply(targets20, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names20<-sps[sp_notargeted20]
+
+
+targets10<-as.data.frame(targetsmet(results2_10)) # Make a data fram using targets meet
+sp_notargeted10<-which(apply(targets10, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names10<-sps[sp_notargeted10]
+
   
 targets25<-as.data.frame(targetsmet(results2_25)) # Make a data fram using targets meet
 sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
@@ -459,7 +585,11 @@ sp_notargete_namesdif<-sps[sp_notargeteddif]
 
 print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
 print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names40, " do not meet 40% target", sep=""))
+print(paste(sp_notargete_names30, " do not meet 30% target", sep=""))
 print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_names20, " do not meet 20% target", sep=""))
+print(paste(sp_notargete_names10, " do not meet 10% target", sep=""))
 print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
 
 
@@ -467,7 +597,7 @@ print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
 
 
 # create 4 plotting areas in the one window
-op2<-par(mfrow=c(4,1))
+op2<-par(mfrow=c(8,1))
 
   # histogram of first portfolio
   hist(results75.repr, freq=TRUE, xlim=c(0,1), las=1,
@@ -487,6 +617,17 @@ op2<-par(mfrow=c(4,1))
        xlab='Proportion of species adequately represented',
        main="Level of representation with 50%"
   )
+
+    hist(results40.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 40%"
+  )
+    hist(results30.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 30%"
+  )
   
   # print best level of representation
   # print(max(results50.repr))
@@ -498,6 +639,17 @@ op2<-par(mfrow=c(4,1))
        ylab='Frequency of solutions',
        xlab='Proportion of species adequately represented',
        main="Level of representation with 25%"
+  )
+  
+    hist(results20.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 20%"
+  )
+    hist(results10.repr, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 10%"
   )
   
     hist(resultsmix.repr, freq=TRUE, xlim=c(0,1), las=1,
@@ -513,20 +665,32 @@ par(op2)
 print("best level of representation")
 print(max(results75.repr))
 print(max(results50.repr))
+print(max(results40.repr))
+print(max(results30.repr))
 print(max(results25.repr))
+print(max(results20.repr))
+print(max(results10.repr))
 print(max(resultsmix.repr))
 
 print("best solution")
   # make a geoplot of the best solution
 plot(results2_75, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
 plot(results2_50, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_40, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_30, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
 plot(results2_25, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_20, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+plot(results2_10, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
 plot(results2_mix, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
 
   # planing uniit selection frecuency
   plot(results2_75, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results2_50, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+    plot(results2_40, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+    plot(results2_30, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results2_25, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)  
+    plot(results2_20, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+    plot(results2_10, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results2_mix, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
   
 # The solutions in this portfolio are fairly fragmented. 
@@ -575,8 +739,20 @@ results3_75<-update(results2_75, ~pu(id=pu.ids,
 results3_50<-update(results2_50, ~pu(id=pu.ids, 
                                         cost=pu.costs, 
                                         status=PAs))
+results3_40<-update(results2_40, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+results3_30<-update(results2_30, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+results3_20<-update(results2_20, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
 
 results3_25<-update(results2_25, ~pu(id=pu.ids, 
+                                        cost=pu.costs, 
+                                        status=PAs))
+results3_10<-update(results2_10, ~pu(id=pu.ids, 
                                         cost=pu.costs, 
                                         status=PAs))
 
@@ -590,8 +766,13 @@ results3_mix<-update(results2_mix, ~pu(id=pu.ids,
 # get levels of representation in each portfolio
 results75.repr3<-rowMeans(targetsmet(results3_75))
 results50.repr3<-rowMeans(targetsmet(results3_50))
+results40.repr3<-rowMeans(targetsmet(results3_40))
+results30.repr3<-rowMeans(targetsmet(results3_30))
+results20.repr3<-rowMeans(targetsmet(results3_20))
 results25.repr3<-rowMeans(targetsmet(results3_25))
+results10.repr3<-rowMeans(targetsmet(results3_10))
 resultsmix.repr3<-rowMeans(targetsmet(results3_mix))
+
 
 
 
@@ -613,13 +794,17 @@ sp_notargete_namesdif<-sps[sp_notargeteddif]
 
 print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
 print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names40, " do not meet 40% target", sep=""))
+print(paste(sp_notargete_names30, " do not meet 30% target", sep=""))
 print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_names20, " do not meet 20% target", sep=""))
+print(paste(sp_notargete_names10, " do not meet 10% target", sep=""))
 print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
 
 
 
 # create 3 plotting areas in the one window
-op3<-par(mfrow=c(4,1))
+op3<-par(mfrow=c(8,1))
 
   # histogram of first portfolio
   hist(results75.repr3, freq=TRUE, xlim=c(0,1), las=1,
@@ -640,6 +825,20 @@ op3<-par(mfrow=c(4,1))
        main="Level of representation with 50%"
   )
   
+  
+    hist(results40.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 40%"
+  )
+    
+    hist(results30.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 30%"
+  )  
+  
+    
   # print best level of representation
   # print(max(results50.repr))
   
@@ -651,6 +850,18 @@ op3<-par(mfrow=c(4,1))
        xlab='Proportion of species adequately represented',
        main="Level of representation with 25%"
   )
+  
+    hist(results20.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 20%"
+  )
+    
+    hist(results10.repr3, freq=TRUE, xlim=c(0,1), las=1,
+       ylab='Frequency of solutions',
+       xlab='Proportion of species adequately represented',
+       main="Level of representation with 10%"
+  )  
     hist(resultsmix.repr3, freq=TRUE, xlim=c(0,1), las=1,
        ylab='Frequency of solutions',
        xlab='Proportion of species adequately represented',
@@ -667,14 +878,22 @@ op3<-par(mfrow=c(4,1))
   # make a geoplot of the best solution
   plot(results3_75, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results3_50, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_40, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_30, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results3_25, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_20, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
+  plot(results3_10, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
   plot(results3_mix, 0, basemap="road", grayscale=TRUE, force_reset = FALSE)
   
   # planing uniit selection frecuency
-  plot(results3_75, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
-  plot(results3_50, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
-  plot(results3_25, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)  
-  plot(results3_mix, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE) 
+  plot(results3_75)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  # plot(results3_50)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+   # plot(results3_40)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+    # plot(results3_30)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  # plot(results3_25)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)  
+   # plot(results3_20)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+   # plot(results3_10)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE)
+  # plot(results3_mix)#, colramp='YlGnBu', basemap="road", grayscale=TRUE, force_reset = FALSE) 
   
 # The solutions in this portfolio are fairly fragmented. 
 # All the solutions so far were made under the assumption that all planning units have equal acquisition costs 
@@ -688,10 +907,32 @@ sp_notargete_names75<-sps[sp_notargeted75]
 targets50<-as.data.frame(targetsmet(results3_50)) # Make a data fram using targets meet
 sp_notargeted50<-which(apply(targets50, 2, sum)<=0) # which species do not meet any target
 sp_notargete_names50<-sps[sp_notargeted50]
+
+
+targets40<-as.data.frame(targetsmet(results3_40)) # Make a data fram using targets meet
+sp_notargeted40<-which(apply(targets40, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names40<-sps[sp_notargeted40]
+
+
+targets30<-as.data.frame(targetsmet(results3_30)) # Make a data fram using targets meet
+sp_notargeted30<-which(apply(targets30, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names30<-sps[sp_notargeted30]
+
   
 targets25<-as.data.frame(targetsmet(results3_25)) # Make a data fram using targets meet
 sp_notargeted25<-which(apply(targets25, 2, sum)<=0) # which species do not meet any target
 sp_notargete_names25<-sps[sp_notargeted25] 
+
+
+targets20<-as.data.frame(targetsmet(results3_20)) # Make a data fram using targets meet
+sp_notargeted20<-which(apply(targets20, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names20<-sps[sp_notargeted20]
+
+
+targets10<-as.data.frame(targetsmet(results3_10)) # Make a data fram using targets meet
+sp_notargeted10<-which(apply(targets10, 2, sum)<=0) # which species do not meet any target
+sp_notargete_names10<-sps[sp_notargeted10]
+
 
 targetsdif<-as.data.frame(targetsmet(results3_mix)) # Make a data frame using targets meet
 sp_notargeteddif<-which(apply(targetsdif, 2, sum)<=0) # which species do not meet any target
@@ -699,7 +940,11 @@ sp_notargete_namesdif<-sps[sp_notargeteddif]
 
 print(paste(sp_notargete_names75, " do not meet 75% target", sep=""))
 print(paste(sp_notargete_names50, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names40, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names30, " do not meet 50% target", sep=""))
 print(paste(sp_notargete_names25, " do not meet 25% target", sep=""))
+print(paste(sp_notargete_names20, " do not meet 50% target", sep=""))
+print(paste(sp_notargete_names10, " do not meet 50% target", sep=""))
 print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
   
     
@@ -721,7 +966,7 @@ print(paste(sp_notargete_namesdif, " do not meet mix% target", sep=""))
 
 ## generate list of portfolios with different BLMS
 # make vector BLM parameters to use
-blm.pars=c(0, 100, 250, 500, 750, 1000)
+blm.pars=c(0, 0.1, 1, 10,  100, 250, 500, 750, 1000)
 
 # create list with different portfolio for each BLM
 results4_mix<-list()
@@ -744,7 +989,7 @@ for (i in seq_along(blm.pars)) {
 
 ## plot trade-off between shortfall and connectivity
 # get colours for legend
-legend.cols<-c("#FFFFB2", "#FED976", "#FEB24C", "#FD8D3C", "#F03B20", "#BD0026")
+legend.cols<-c("#77f442", "#a3f441", "#FFFFB2", "#FED976", "#FEB24C", "#FD8D3C", "#F03B20", "#BD0026", "#fc0000")
 pt.cols<-legend.cols[match(blm, blm.pars)]
 
 # reset plotting window
@@ -760,6 +1005,9 @@ abline(lm(cost~con))
 # add legend
 legend("topright", legend=blm.pars, col='black', pt.bg=legend.cols, pch=21, title='BLM')
 
+library(lattice)
+xyplot(cost~con | cost*con)
+
 # Looking at this curve and depending on the total budget, you might decide that second portfolio 
 # in results4 achieves an acceptable level of representation and fragmentation. 
 # Let's generate another portfolio of solutions with BLM=0.0001, and then 
@@ -767,7 +1015,7 @@ legend("topright", legend=blm.pars, col='black', pt.bg=legend.cols, pch=21, titl
 
 
 # make new solutions with BLM=0.0001
-results5<-update(results3_mix, ~opt(BLM=0.0001))
+results5<-update(results3_mix, ~opt(BLM=0.1))
 
 # geoplot showing differences between the best solution in each portfolio
 plot(results5, results3_mix, i=0, j=0)
